@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disappearing Blood Orange Ball</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            background-color: #f0f0f0;
+            position: relative;
+            transition: background-color 0.5s ease-in-out;
+        }
+
+        .ball {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background-color: #FF4500;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            transition: opacity 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="ball"></div>
+
+    <script>
+        const ball = document.querySelector('.ball');
+        const body = document.body;
+        const gravity = 0.75;
+        let velocityY = 0;
+        let positionY = 0;
+        const ground = window.innerHeight - ball.offsetHeight;
+        let isBouncing = true;
+
+        // Speed control (pixels per frame)
+        const SPREAD_SPEED = 55;
+
+        function calculateMaxRadius(x, y) {
+            const corners = [
+                [0, 0],
+                [body.clientWidth, 0],
+                [0, body.clientHeight],
+                [body.clientWidth, body.clientHeight]
+            ];
+            
+            return Math.max(...corners.map(([cx, cy]) => Math.hypot(cx - x, cy - y)));
+        }
+
+        function createSpreadEffect(x, y) {
+            const maxRadius = calculateMaxRadius(x, y);
+            let currentRadius = 0;
+
+            const animate = () => {
+                currentRadius += SPREAD_SPEED;
+                body.style.background = `
+                    radial-gradient(circle ${currentRadius}px at ${x}px ${y}px, 
+                    #FF4500 0%, 
+                    #FF4500 ${currentRadius}px, 
+                    #f0f0f0 ${currentRadius}px
+                `;
+
+                if (currentRadius < maxRadius) {
+                    requestAnimationFrame(animate);
+                } else {
+                    body.style.backgroundColor = '#FF4500';
+                }
+            };
+
+            animate();
+        }
+
+        function animate() {
+            if (!isBouncing) return;
+
+            velocityY += gravity;
+            positionY += velocityY;
+
+            if (positionY > ground) {
+                positionY = ground;
+                velocityY = 0;
+                isBouncing = false;
+
+                // Hide the ball with fade-out effect
+                ball.style.opacity = '0';
+
+                const ballRect = ball.getBoundingClientRect();
+                const centerX = ballRect.left + ballRect.width / 2;
+                const centerY = ballRect.top + ballRect.height;
+
+                createSpreadEffect(centerX, centerY);
+
+                // Remove ball completely after fade-out
+                setTimeout(() => {
+                    ball.style.display = 'none';
+                }, 300);
+            }
+
+            ball.style.top = positionY + 'px';
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
