@@ -1,0 +1,3 @@
+--------have a pixelated font saying sponsors adroll in 5 seconds...
+---pay to raid websites
+-------viewers can submit any image they are the sponsors 
